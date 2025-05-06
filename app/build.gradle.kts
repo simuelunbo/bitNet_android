@@ -16,7 +16,35 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk { abiFilters += setOf("arm64-v8a", "x86_64") }
+
+        externalNativeBuild {
+            cmake {
+                cppFlags += listOf("-O2", "-DNDEBUG")
+                arguments += listOf(
+                    "-DANDROID_PLATFORM=android-26",
+                    "-DANDROID_STL=c++_static"
+                )
+            }
+        }
     }
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
+    androidResources {
+        noCompress.add("gguf")
+    }
+
 
     buildTypes {
         release {
@@ -28,17 +56,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
     }
 }
-
 dependencies {
 
     implementation(libs.androidx.core.ktx)

@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.22)
+project(bitnet)
+add_library(bitnet SHARED bitnet_stub.cpp)
+find_library(log-lib log)
+target_link_libraries(bitnet ${log-lib})
