@@ -1,0 +1,4 @@
+[submodule "app/src/main/cpp/bitnet"]
+	path = app/src/main/cpp/bitnet
+	url = https://github.com/simuelunbo/BitNet.git
+	branch = bitnet_android
