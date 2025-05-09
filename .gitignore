@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+app/src/main/assets/model/ggml-model-i2_s.gguf
+
+.idea/ChatHistory_schema_v2.xml
+
+.idea/vcs.xml
