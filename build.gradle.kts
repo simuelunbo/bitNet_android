@@ -4,3 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
 }
+
+tasks.register<Exec>("updateSubmodules") {
+    commandLine("git", "submodule", "update", "--init", "--recursive")
+    onlyIf { !file(".git/modules/app/src/main/cpp/bitnet/HEAD").exists() }
+}
