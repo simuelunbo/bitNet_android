@@ -17,14 +17,20 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        ndk { abiFilters += setOf("arm64-v8a", "x86_64") }
+        ndk { abiFilters += setOf("arm64-v8a") }
 
         externalNativeBuild {
             cmake {
-                cppFlags += listOf("-O2", "-DNDEBUG")
+                cppFlags += listOf("-std=c++17", "-O2", "-fvisibility=hidden")
                 arguments += listOf(
                     "-DANDROID_PLATFORM=android-26",
-                    "-DANDROID_STL=c++_static"
+                    "-DANDROID_STL=c++_static",
+                    "-DCMAKE_BUILD_TYPE=Release",
+                    "-DGGML_USE_ACCELERATE=OFF",
+                    "-DGGML_USE_OPENBLAS=OFF",
+                    "-DGGML_USE_METAL=OFF",
+                    "-DGGML_USE_CUBLAS=OFF",
+                    "-DGGML_USE_SYCL=OFF"
                 )
             }
         }
@@ -39,6 +45,9 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
+        }
+        resources {
+            excludes += "**/**.gguf"
         }
     }
     androidResources {
