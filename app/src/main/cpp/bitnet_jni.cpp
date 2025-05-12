@@ -36,6 +36,11 @@ static bitnet_context* g_ctx = nullptr;
 static std::vector<int> s_tokens;
 static const int MAX_TOKEN_LEN = 8192;
 
+// 전역 변수로 시스템 프롬프트와 사용자 프롬프트 토큰 저장
+static std::vector<llama_token> g_system_tokens;
+static std::vector<llama_token> g_user_tokens;
+static int g_n_past = 0;
+
 #ifdef __cplusplus
 // C++ 내부 구현
 namespace bitnet {
@@ -268,9 +273,25 @@ Java_com_simuel_onebitllm_BitnetNative_generateNextToken(
         return env->NewStringUTF("[not initialized]");
     }
 
-    // BitNet 토큰 생성
-    const char* token = bitnet_generate_next(g_ctx);
-    return env->NewStringUTF(token);
+    // 다음 토큰 생성
+    llama_token new_token_id = llama_sampling_sample(g_ctx, nullptr, nullptr);
+    llama_sampling_accept(g_ctx, new_token_id, true);
+
+    // 토큰을 문자열로 변환
+    const char *token_str = llama_token_to_piece(g_ctx, new_token_id).c_str();
+    if (!token_str) {
+        return nullptr;
+    }
+
+    // 토큰 평가
+    llama_batch batch = llama_batch_init(1, 0, 1);
+    llama_batch_add(batch, new_token_id, g_n_past, { 0 }, false);
+    if (llama_decode(g_ctx, batch) != 0) {
+        return nullptr;
+    }
+    g_n_past++;
+
+    return env->NewStringUTF(token_str);
 }
 
 extern "C"
@@ -283,4 +304,79 @@ Java_com_simuel_onebitllm_BitnetNative_freeModel(
         bitnet_free(g_ctx);
         g_ctx = nullptr;
     }
+    if (g_model != nullptr) {
+        llama_free_model(g_model);
+        g_model = nullptr;
+    }
+    // 프롬프트 토큰 초기화
+    g_system_tokens.clear();
+    g_user_tokens.clear();
+    g_n_past = 0;
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_simuel_onebitllm_BitnetNative_setSystemPrompt(JNIEnv *env, jobject thiz, jstring prompt) {
+    if (!g_ctx || !g_model) {
+        return JNI_FALSE;
+    }
+
+    const char *system_prompt = env->GetStringUTFChars(prompt, nullptr);
+    if (!system_prompt) {
+        return JNI_FALSE;
+    }
+
+    // 시스템 프롬프트 토큰화
+    g_system_tokens = llama_tokenize(g_model, system_prompt, true, true);
+    env->ReleaseStringUTFChars(prompt, system_prompt);
+
+    if (g_system_tokens.empty()) {
+        return JNI_FALSE;
+    }
+
+    // 시스템 프롬프트 평가
+    g_n_past = 0;
+    for (size_t i = 0; i < g_system_tokens.size(); i++) {
+        llama_batch batch = llama_batch_init(1, 0, 1);
+        llama_batch_add(batch, g_system_tokens[i], i, { 0 }, false);
+        if (llama_decode(g_ctx, batch) != 0) {
+            return JNI_FALSE;
+        }
+        g_n_past++;
+    }
+
+    return JNI_TRUE;
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_simuel_onebitllm_BitnetNative_setUserPrompt(JNIEnv *env, jobject thiz, jstring prompt) {
+    if (!g_ctx || !g_model) {
+        return JNI_FALSE;
+    }
+
+    const char *user_prompt = env->GetStringUTFChars(prompt, nullptr);
+    if (!user_prompt) {
+        return JNI_FALSE;
+    }
+
+    // 사용자 프롬프트 토큰화
+    g_user_tokens = llama_tokenize(g_model, user_prompt, false, true);
+    env->ReleaseStringUTFChars(prompt, user_prompt);
+
+    if (g_user_tokens.empty()) {
+        return JNI_FALSE;
+    }
+
+    // 사용자 프롬프트 평가
+    for (size_t i = 0; i < g_user_tokens.size(); i++) {
+        llama_batch batch = llama_batch_init(1, 0, 1);
+        llama_batch_add(batch, g_user_tokens[i], g_n_past + i, { 0 }, false);
+        if (llama_decode(g_ctx, batch) != 0) {
+            return JNI_FALSE;
+        }
+    }
+    g_n_past += g_user_tokens.size();
+
+    return JNI_TRUE;
 }
