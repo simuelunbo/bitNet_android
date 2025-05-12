@@ -10,4 +10,6 @@ object BitnetNative {
 
     /** 하나의 토큰(또는 문자열 버퍼)을 생성해 반환한다. */
     external fun generateNextToken(): String
+
+    external fun freeModel()
 }
