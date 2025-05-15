@@ -16,6 +16,7 @@ JNIEXPORT jboolean JNICALL Java_com_simuel_onebitllm_BitnetNative_setSystemPromp
 JNIEXPORT jboolean JNICALL Java_com_simuel_onebitllm_BitnetNative_setUserPrompt(JNIEnv *env, jobject thiz, jstring prompt);
 JNIEXPORT jstring JNICALL Java_com_simuel_onebitllm_BitnetNative_generateNextToken(JNIEnv *env, jobject thiz);
 JNIEXPORT void JNICALL Java_com_simuel_onebitllm_BitnetNative_freeModel(JNIEnv *env, jobject thiz);
+JNIEXPORT jboolean JNICALL Java_com_simuel_onebitllm_BitnetNative_isModelLoaded(JNIEnv *env, jobject thiz);
 
 #ifdef __cplusplus
 }

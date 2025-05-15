@@ -380,3 +380,11 @@ Java_com_simuel_onebitllm_BitnetNative_setUserPrompt(JNIEnv *env, jobject thiz, 
 
     return JNI_TRUE;
 }
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_simuel_onebitllm_BitnetNative_isModelLoaded(JNIEnv *env, jobject thiz) {
+    // 모델이 로드되었는지 확인하는 코드
+    // g_ctx는 전역 컨텍스트 변수
+    return (g_ctx != nullptr && g_ctx->is_initialized) ? JNI_TRUE : JNI_FALSE;
+}
