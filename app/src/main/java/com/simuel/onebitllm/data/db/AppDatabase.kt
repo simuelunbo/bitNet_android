@@ -1,0 +1,21 @@
+package com.simuel.onebitllm.data.db
+
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.simuel.onebitllm.data.db.dao.ChatDao
+import com.simuel.onebitllm.data.db.dao.MessageDao
+import com.simuel.onebitllm.data.db.entities.Chat
+import com.simuel.onebitllm.data.db.entities.Message
+import com.simuel.onebitllm.data.db.util.DateConverter
+
+@Database(
+    entities = [Chat::class, Message::class],
+    version = 1,
+    exportSchema = false
+)
+@TypeConverters(DateConverter::class)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun chatDao(): ChatDao
+    abstract fun messageDao(): MessageDao
+}
