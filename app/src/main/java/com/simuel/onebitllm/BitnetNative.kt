@@ -18,4 +18,6 @@ object BitnetNative {
     external fun generateNextToken(): String
 
     external fun freeModel()
+
+    external fun isModelLoaded(): Boolean
 }
