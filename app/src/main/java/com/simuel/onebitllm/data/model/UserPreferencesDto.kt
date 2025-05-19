@@ -1,6 +1,6 @@
-package com.simuel.onebitllm.domain.model
+package com.simuel.onebitllm.data.model
 
-data class UserPreferences(
+data class UserPreferencesDto(
     val systemPrompt: String,
     val temperature: Float,
     val maxTokens: Int,

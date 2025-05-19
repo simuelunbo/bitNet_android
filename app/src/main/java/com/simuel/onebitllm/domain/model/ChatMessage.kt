@@ -2,7 +2,7 @@ package com.simuel.onebitllm.domain.model
 
 import java.util.Date
 
-data class MessageData(
+data class ChatMessage(
     val id: Long = 0,
     val chatId: Long,
     val content: String,

@@ -5,12 +5,12 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.simuel.onebitllm.data.db.dao.ChatDao
 import com.simuel.onebitllm.data.db.dao.MessageDao
-import com.simuel.onebitllm.data.db.entities.Chat
-import com.simuel.onebitllm.data.db.entities.Message
+import com.simuel.onebitllm.data.db.entities.ChatEntity
+import com.simuel.onebitllm.data.db.entities.MessageEntity
 import com.simuel.onebitllm.data.db.util.DateConverter
 
 @Database(
-    entities = [Chat::class, Message::class],
+    entities = [ChatEntity::class, MessageEntity::class],
     version = 1,
     exportSchema = false
 )

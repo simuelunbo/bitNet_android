@@ -1,10 +1,10 @@
-package com.simuel.onebitllm.data.bitnet
+package com.simuel.onebitllm.data.datasource
 
 import android.content.Context
 import android.util.Log
 import com.simuel.onebitllm.BitnetNative
-import com.simuel.onebitllm.data.model.BitnetOperationResult
-import com.simuel.onebitllm.data.model.ModelLoadProgress
+import com.simuel.onebitllm.data.model.ModelLoadProgressDto
+import com.simuel.onebitllm.data.model.OperationResultDto
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -21,36 +21,34 @@ class BitnetNativeDataSourceImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : BitnetNativeDataSource {
 
-    private val TAG = "BitnetNativeDataSource"
-
-    override fun loadModel(): Flow<ModelLoadProgress> = flow {
-        emit(ModelLoadProgress(phase = ModelLoadProgress.LoadPhase.INITIALIZATION))
+    override fun loadModel(): Flow<ModelLoadProgressDto> = flow {
+        emit(ModelLoadProgressDto(phase = ModelLoadProgressDto.LoadPhase.INITIALIZATION))
 
         try {
             // 1단계: 모델 파일 준비 (Assets에서 복사)
-            emit(ModelLoadProgress(phase = ModelLoadProgress.LoadPhase.PREPARING))
+            emit(ModelLoadProgressDto(phase = ModelLoadProgressDto.LoadPhase.PREPARING))
             val modelFile = prepareModelFile { bytesLoaded, totalBytes ->
                 emit(
-                    ModelLoadProgress(
+                    ModelLoadProgressDto(
                         bytesLoaded,
                         totalBytes,
-                        ModelLoadProgress.LoadPhase.PREPARING
+                        ModelLoadProgressDto.LoadPhase.PREPARING
                     )
                 )
             }
 
             // 2단계: 모델 로딩
-            emit(ModelLoadProgress(phase = ModelLoadProgress.LoadPhase.LOADING))
+            emit(ModelLoadProgressDto(phase = ModelLoadProgressDto.LoadPhase.LOADING))
             val threads = Runtime.getRuntime().availableProcessors().coerceAtMost(4)
 
             // 모델 로드 진행률은 알기 어려워서 50% 고정값 사용
-            emit(ModelLoadProgress(50, 100, ModelLoadProgress.LoadPhase.LOADING))
+            emit(ModelLoadProgressDto(50, 100, ModelLoadProgressDto.LoadPhase.LOADING))
 
             val modelLoaded = BitnetNative.initModel(modelFile.absolutePath, threads)
 
             // 3단계: 최종 완료
             if (modelLoaded) {
-                emit(ModelLoadProgress(100, 100, ModelLoadProgress.LoadPhase.FINALIZING))
+                emit(ModelLoadProgressDto(100, 100, ModelLoadProgressDto.LoadPhase.FINALIZING))
                 Log.d(TAG, "Model loaded successfully")
             } else {
                 throw RuntimeException("모델 초기화 실패")
@@ -61,41 +59,41 @@ class BitnetNativeDataSourceImpl @Inject constructor(
         }
     }.flowOn(Dispatchers.IO)
 
-    override fun setSystemPrompt(prompt: String): BitnetOperationResult {
+    override fun setSystemPrompt(prompt: String): OperationResultDto {
         if (!isModelLoaded()) {
-            return BitnetOperationResult.Error(IllegalStateException("모델이 로드되지 않았습니다"))
+            return OperationResultDto.Error(IllegalStateException("모델이 로드되지 않았습니다"))
         }
 
         return try {
             val success = BitnetNative.setSystemPrompt(prompt)
             if (success) {
-                BitnetOperationResult.Success
+                OperationResultDto.Success
             } else {
-                BitnetOperationResult.Error(RuntimeException("시스템 프롬프트 설정에 실패했습니다."))
+                OperationResultDto.Error(RuntimeException("시스템 프롬프트 설정에 실패했습니다."))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error setting system prompt", e)
             e.printStackTrace()
-            BitnetOperationResult.Error(e)
+            OperationResultDto.Error(e)
         }
     }
 
-    override fun setUserPrompt(prompt: String): BitnetOperationResult {
+    override fun setUserPrompt(prompt: String): OperationResultDto {
         if (!isModelLoaded()) {
-            return BitnetOperationResult.Error(IllegalStateException("모델이 로드되지 않았습니다"))
+            return OperationResultDto.Error(IllegalStateException("모델이 로드되지 않았습니다"))
         }
 
         return try {
             val success = BitnetNative.setUserPrompt(prompt)
             if (success) {
-                BitnetOperationResult.Success
+                OperationResultDto.Success
             } else {
-                BitnetOperationResult.Error(RuntimeException("사용자 입력 설정 실패했습니다."))
+                OperationResultDto.Error(RuntimeException("사용자 입력 설정 실패했습니다."))
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error setting user prompt", e)
             e.printStackTrace()
-            BitnetOperationResult.Error(e)
+            OperationResultDto.Error(e)
         }
     }
 
@@ -171,5 +169,9 @@ class BitnetNativeDataSourceImpl @Inject constructor(
         }
 
         return modelFile
+    }
+
+    companion object {
+        private const val TAG = "BitnetNativeDataSource"
     }
 }

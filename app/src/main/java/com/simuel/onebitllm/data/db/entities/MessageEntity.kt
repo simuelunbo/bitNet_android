@@ -10,7 +10,7 @@ import java.util.Date
     tableName = "messages",
     foreignKeys = [
         ForeignKey(
-            entity = Chat::class,
+            entity = ChatEntity::class,
             parentColumns = ["id"],
             childColumns = ["chatId"],
             onDelete = ForeignKey.CASCADE
@@ -18,7 +18,7 @@ import java.util.Date
     ],
     indices = [Index("chatId")]
 )
-data class Message(
+data class MessageEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val chatId: Long,

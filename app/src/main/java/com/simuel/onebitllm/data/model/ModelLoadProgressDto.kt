@@ -1,6 +1,6 @@
 package com.simuel.onebitllm.data.model
 
-data class ModelLoadProgress(
+data class ModelLoadProgressDto(
     val bytesLoaded: Long = 0,
     val totalBytes: Long = 1, // 기본값 1로 0 나누기 방지
     val phase: LoadPhase = LoadPhase.INITIALIZATION
