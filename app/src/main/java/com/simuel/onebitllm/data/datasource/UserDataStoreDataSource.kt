@@ -3,7 +3,7 @@ package com.simuel.onebitllm.data.datasource
 import com.simuel.onebitllm.data.model.UserPreferencesDto
 import kotlinx.coroutines.flow.Flow
 
-interface UserPreferencesDataSource {
+interface UserDataStoreDataSource {
     val userPreferenceFlow: Flow<UserPreferencesDto>
 
     suspend fun updateSystemPrompt(systemPrompt: String)

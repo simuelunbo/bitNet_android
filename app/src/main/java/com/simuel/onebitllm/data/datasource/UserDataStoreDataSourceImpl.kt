@@ -14,11 +14,10 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 import javax.inject.Inject
-import javax.inject.Singleton
 
-class UserPreferencesDataSourceImpl @Inject constructor(
+class UserDataStoreDataSourceImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
-) : UserPreferencesDataSource {
+) : UserDataStoreDataSource {
 
     override val userPreferenceFlow: Flow<UserPreferencesDto> = dataStore.data
         .catch { exception ->
