@@ -2,14 +2,14 @@ package com.simuel.onebitllm.data.repository
 
 import com.simuel.onebitllm.data.datasource.UserDataStoreDataSource
 import com.simuel.onebitllm.domain.model.ChatPreferences
-import com.simuel.onebitllm.domain.repository.UserDataStoreRepository
+import com.simuel.onebitllm.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class UserDataStoreRepositoryImpl @Inject constructor(
+class SettingsRepositoryImpl @Inject constructor(
     private val userDataStoreDataSource: UserDataStoreDataSource
-) : UserDataStoreRepository {
+) : SettingsRepository {
 
     override fun getUserPreferences(): Flow<ChatPreferences> {
         return userDataStoreDataSource.userPreferenceFlow.map { preferencesDto ->

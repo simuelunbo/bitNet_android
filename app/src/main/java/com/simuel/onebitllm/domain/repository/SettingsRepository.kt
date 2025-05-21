@@ -3,7 +3,7 @@ package com.simuel.onebitllm.domain.repository
 import com.simuel.onebitllm.domain.model.ChatPreferences
 import kotlinx.coroutines.flow.Flow
 
-interface UserDataStoreRepository {
+interface SettingsRepository {
     fun getUserPreferences(): Flow<ChatPreferences>
     
     suspend fun updateSystemPrompt(prompt: String)
