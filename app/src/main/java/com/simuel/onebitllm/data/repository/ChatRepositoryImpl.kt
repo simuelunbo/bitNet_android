@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class ChatRepositoryImpl @Inject constructor(
     private val chatDataSource: ChatDataSource
 ) : ChatRepository {

@@ -16,7 +16,6 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class UserPreferencesDataSourceImpl @Inject constructor(
     private val dataStore: DataStore<Preferences>,
 ) : UserPreferencesDataSource {

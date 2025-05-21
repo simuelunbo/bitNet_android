@@ -9,7 +9,6 @@ import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class ChatDataSourceImpl @Inject constructor(
     private val chatDao: ChatDao,
     private val messageDao: MessageDao
