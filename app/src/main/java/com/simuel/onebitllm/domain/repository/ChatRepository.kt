@@ -13,5 +13,5 @@ interface ChatRepository {
     suspend fun addUserMessage(chatId: Long, content: String): Long
     suspend fun addAssistantMessage(chatId: Long, initialContent: String = ""): Long
     suspend fun updateMessageContent(messageId: Long, content: String)
-    suspend fun getMessageById(messageId: Long): ChatMessage
+//    suspend fun getMessageById(messageId: Long): ChatMessage
 }

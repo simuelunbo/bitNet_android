@@ -63,4 +63,8 @@ class ChatRepositoryImpl @Inject constructor(
     override suspend fun updateMessageContent(messageId: Long, content: String) {
         chatDataSource.updateMessageContent(messageId, content)
     }
+
+//    override suspend fun getMessageById(messageId: Long): ChatMessage {
+//        TODO("Not yet implemented")
+//    }
 } 
