@@ -17,7 +17,7 @@ abstract class RepositoryModule {
     @Binds
     abstract fun bindBitnetRepository(repo: BitnetRepositoryImpl): BitnetRepository
     @Binds
-    abstract fun bindNewsRepository(repo: ChatRepositoryImpl): ChatRepository
+    abstract fun bindChatRepository(repo: ChatRepositoryImpl): ChatRepository
     @Binds
-    abstract fun bindNewsRepository(repo: SettingsRepositoryImpl): SettingsRepository
+    abstract fun bindSettingsRepository(repo: SettingsRepositoryImpl): SettingsRepository
 }
