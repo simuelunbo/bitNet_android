@@ -1,4 +1,4 @@
-package com.simuel.onebitllm.presentation.model
+package com.simuel.onebitllm.ui.model
 
 import com.simuel.onebitllm.domain.model.ChatMessage
 
