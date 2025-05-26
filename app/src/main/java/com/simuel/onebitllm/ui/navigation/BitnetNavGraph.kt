@@ -6,7 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.simuel.onebitllm.ui.chatlist.ChatListScreen
+import com.simuel.onebitllm.ui.chatlist.ChatRoomListScreen
+import com.simuel.onebitllm.ui.model.ChatRoomItemUiState
 import com.simuel.onebitllm.ui.splash.SplashRoute
 
 /**
@@ -42,6 +43,13 @@ private fun NavGraphBuilder.addSplash(navController: NavHostController) {
 
 private fun NavGraphBuilder.addChatList() {
     composable(BitnetDestination.ChatList) {
-        ChatListScreen()
+        ChatRoomListScreen(
+            chats = temporaryChats,
+        )
     }
 }
+
+private val temporaryChats = listOf(
+    ChatRoomItemUiState(1, "Title 1", "Hey, how are you?"),
+    ChatRoomItemUiState(2, "Title 2", "I'm on my way"),
+)
