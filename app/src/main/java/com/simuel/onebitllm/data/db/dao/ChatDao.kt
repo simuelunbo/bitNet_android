@@ -2,6 +2,7 @@ package com.simuel.onebitllm.data.db.dao
 
 import androidx.room.*
 import com.simuel.onebitllm.data.db.entities.ChatEntity
+import com.simuel.onebitllm.data.db.entities.ChatWithLastMessage
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
 
@@ -27,4 +28,16 @@ interface ChatDao {
     
     @Query("DELETE FROM chats")
     suspend fun deleteAllChats()
+
+    @Query(
+        """
+        SELECT c.id, c.title, m.content AS lastMessage
+        FROM chats AS c
+        LEFT JOIN messages AS m ON m.id = (
+            SELECT id FROM messages WHERE chatId = c.id ORDER BY timestamp DESC LIMIT 1
+        )
+        ORDER BY c.updatedAt DESC
+        """
+    )
+    fun getChatsWithLastMessage(): Flow<List<ChatWithLastMessage>>
 }
