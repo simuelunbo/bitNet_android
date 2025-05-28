@@ -1,11 +1,14 @@
 package com.simuel.onebitllm.data.datasource
 
 import com.simuel.onebitllm.data.db.entities.ChatEntity
+import com.simuel.onebitllm.data.db.entities.ChatWithLastMessage
 import com.simuel.onebitllm.data.db.entities.MessageEntity
 import kotlinx.coroutines.flow.Flow
 
 interface ChatDataSource {
     fun getAllChats(): Flow<List<ChatEntity>>
+
+    fun getChatsWithLastMessage(): Flow<List<ChatWithLastMessage>>
     
     fun getMessagesByChatId(chatId: Long): Flow<List<MessageEntity>>
     

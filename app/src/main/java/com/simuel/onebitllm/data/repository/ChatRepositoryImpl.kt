@@ -3,6 +3,7 @@ package com.simuel.onebitllm.data.repository
 import com.simuel.onebitllm.data.datasource.ChatDataSource
 import com.simuel.onebitllm.domain.model.Chat
 import com.simuel.onebitllm.domain.model.ChatMessage
+import com.simuel.onebitllm.domain.model.ChatSummary
 import com.simuel.onebitllm.domain.repository.ChatRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -21,6 +22,18 @@ class ChatRepositoryImpl @Inject constructor(
                     title = entity.title,
                     createdAt = entity.createdAt,
                     updatedAt = entity.updatedAt
+                )
+            }
+        }
+    }
+
+    override fun getChatsWithLastMessage(): Flow<List<ChatSummary>> {
+        return chatDataSource.getChatsWithLastMessage().map { rows ->
+            rows.map { row ->
+                ChatSummary(
+                    id = row.id,
+                    title = row.title,
+                    lastMessage = row.lastMessage
                 )
             }
         }

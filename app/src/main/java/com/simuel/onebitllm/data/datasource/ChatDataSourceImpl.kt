@@ -3,6 +3,7 @@ package com.simuel.onebitllm.data.datasource
 import com.simuel.onebitllm.data.db.dao.ChatDao
 import com.simuel.onebitllm.data.db.dao.MessageDao
 import com.simuel.onebitllm.data.db.entities.ChatEntity
+import com.simuel.onebitllm.data.db.entities.ChatWithLastMessage
 import com.simuel.onebitllm.data.db.entities.MessageEntity
 import kotlinx.coroutines.flow.Flow
 import java.util.Date
@@ -16,6 +17,10 @@ class ChatDataSourceImpl @Inject constructor(
 
     override fun getAllChats(): Flow<List<ChatEntity>> {
         return chatDao.getAllChats()
+    }
+
+    override fun getChatsWithLastMessage(): Flow<List<ChatWithLastMessage>> {
+        return chatDao.getChatsWithLastMessage()
     }
     
     override fun getMessagesByChatId(chatId: Long): Flow<List<MessageEntity>> {
