@@ -9,11 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,8 +29,7 @@ import com.simuel.onebitllm.ui.theme.TitleColor
 
 @Composable
 fun ChatRoomListScreen(
-    chats: List<ChatRoomItemUiState>,
-    modifier: Modifier = Modifier
+    chats: List<ChatRoomItemUiState>, modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -47,13 +44,7 @@ fun ChatRoomListScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(onClick = { }) {
-                Icon(
-                    imageVector = Icons.Default.Menu,
-                    contentDescription = "Menu",
-                    tint = TitleColor
-                )
-            }
+            Spacer(modifier = Modifier.size(48.dp))
             Text(
                 text = "Chats",
                 modifier = Modifier
@@ -73,17 +64,16 @@ fun ChatRoomListScreen(
             }
         }
 
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(
-                items = chats,
-                key = { it.id }
-            ) { chat ->
-                ChatListItem(
-                    chat = chat,
-                    onItemClick = {}
-                )
-            }
+        if (chats.isEmpty()) {
+            ChatRoomListEmptyState(
+                onNewChat = {}, modifier = Modifier.weight(1f)
+            )
+        } else {
+            ChatRoomListContent(
+                chats = chats, modifier = Modifier.weight(1f)
+            )
         }
+
 
         Spacer(modifier = Modifier.height(20.dp))
     }
@@ -96,6 +86,15 @@ private fun ChatListScreenPreview() {
         ChatRoomListScreen(sampleChats())
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+private fun EmptyChatListScreenPreview() {
+    OnebitLLMTheme {
+        ChatRoomListScreen(emptyList())
+    }
+}
+
 private fun sampleChats(): List<ChatRoomItemUiState> = listOf(
     ChatRoomItemUiState(1, "Title 1", "Hey, how are you?"),
     ChatRoomItemUiState(2, "Title 2", "I'm on my way"),
