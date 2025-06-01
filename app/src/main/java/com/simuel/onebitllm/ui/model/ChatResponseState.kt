@@ -3,7 +3,7 @@ package com.simuel.onebitllm.ui.model
 import com.simuel.onebitllm.domain.model.ChatMessage
 
 sealed class ChatResponseState {
-    object Started : ChatResponseState()
+    data object Started : ChatResponseState()
 
     data class TokenReceived(
         val token: String,
