@@ -29,7 +29,10 @@ import com.simuel.onebitllm.ui.theme.TitleColor
 
 @Composable
 fun ChatRoomListScreen(
-    chats: List<ChatRoomItemUiState>, modifier: Modifier = Modifier
+    chats: List<ChatRoomItemUiState>,
+    onNewChat: () -> Unit,
+    onChatClick: (ChatRoomItemUiState) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
@@ -55,7 +58,7 @@ fun ChatRoomListScreen(
                 fontWeight = FontWeight.Bold,
                 color = TitleColor
             )
-            IconButton(onClick = { }) {
+            IconButton(onClick = onNewChat) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = "New Chat",
@@ -66,11 +69,13 @@ fun ChatRoomListScreen(
 
         if (chats.isEmpty()) {
             ChatRoomListEmptyState(
-                onNewChat = {}, modifier = Modifier.weight(1f)
+                onNewChat = onNewChat, modifier = Modifier.weight(1f)
             )
         } else {
             ChatRoomListContent(
-                chats = chats, modifier = Modifier.weight(1f)
+                chats = chats,
+                onItemClick = onChatClick,
+                modifier = Modifier.weight(1f)
             )
         }
 
@@ -83,7 +88,7 @@ fun ChatRoomListScreen(
 @Composable
 private fun ChatListScreenPreview() {
     OnebitLLMTheme {
-        ChatRoomListScreen(sampleChats())
+        ChatRoomListScreen(sampleChats(), onNewChat = {}, onChatClick = {})
     }
 }
 
@@ -91,7 +96,7 @@ private fun ChatListScreenPreview() {
 @Composable
 private fun EmptyChatListScreenPreview() {
     OnebitLLMTheme {
-        ChatRoomListScreen(emptyList())
+        ChatRoomListScreen(emptyList(), onNewChat = {}, onChatClick = {})
     }
 }
 

@@ -22,7 +22,8 @@ import com.simuel.onebitllm.ui.theme.TitleColor
 
 @Composable
 fun ChatRoomListEmptyState(
-    onNewChat: () -> Unit, modifier: Modifier = Modifier
+    onNewChat: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier

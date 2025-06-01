@@ -11,6 +11,7 @@ import com.simuel.onebitllm.ui.theme.OnebitLLMTheme
 @Composable
 fun ChatRoomListContent(
     chats: List<ChatRoomItemUiState>,
+    onItemClick: (ChatRoomItemUiState) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier = modifier) {
@@ -20,7 +21,7 @@ fun ChatRoomListContent(
         ) { chat ->
             ChatListItem(
                 chat = chat,
-                onItemClick = {}
+                onItemClick = onItemClick
             )
         }
     }
@@ -33,7 +34,8 @@ private fun ChatRoomListContentPreview() {
         ChatRoomListContent(
             chats = listOf(
                 ChatRoomItemUiState(1, "Title 1", "Hey, how are you?")
-            )
+            ),
+            onItemClick = {}
         )
     }
 }
