@@ -11,26 +11,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.collectLatest
 
-@Composable
-fun SplashRoute(
-    onNavigateToChatList: () -> Unit,
-    viewModel: SplashViewModel = hiltViewModel()
-) {
-    val progress by viewModel.progress.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) {
-        viewModel.events.collectLatest { event ->
-            onNavigateToChatList()
-        }
-    }
-    SplashScreen(progressPercent = progress)
-}
 @Composable
 fun SplashScreen(progressPercent: Float) {
     Box(
