@@ -16,17 +16,31 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simuel.onebitllm.domain.model.ChatMessage
+import com.simuel.onebitllm.ui.model.ChatState
 import com.simuel.onebitllm.ui.theme.*
+
 
 @Composable
 fun ChatScreen(
     title: String,
-    messages: List<ChatMessage>,
-    modifier: Modifier = Modifier
+    viewModel: ChatViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    ChatScreenContent(
+        title = title,
+        state = state,
+    )
+}
+@Composable
+private fun ChatScreenContent(
+    title: String,
+    state: ChatState,
 ) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(BackgroundColor)
     ) {
@@ -35,7 +49,7 @@ fun ChatScreen(
         LazyColumn(
             modifier = Modifier.weight(1f)
         ) {
-            items(items = messages, key = { it.id }) { message ->
+            items(items = state.messages, key = { it.id }) { message ->
                 ChatMessageItem(message = message)
             }
         }
@@ -148,13 +162,6 @@ fun ChatInput(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun ChatScreenPreview() {
-    OnebitLLMTheme {
-        ChatScreen(title = "Ethan Harper", messages =sampleMessages)
-    }
-}
 
 @Preview(showBackground = true, name = "Top App Bar")
 @Composable
@@ -190,6 +197,18 @@ private fun ChatInputPreview() {
     var text by remember { mutableStateOf("") }
     OnebitLLMTheme {
         ChatInput(value = text, onValueChange = { text = it }, onSend = {})
+    }
+}
+@Preview(showBackground = true, name = "Chat Screen")
+@Composable
+private fun ChatScreenPreview() {
+    OnebitLLMTheme {
+        ChatScreenContent(
+            title = "Chat Preview",
+            state = ChatState(
+                messages = sampleMessages
+            )
+        )
     }
 }
 

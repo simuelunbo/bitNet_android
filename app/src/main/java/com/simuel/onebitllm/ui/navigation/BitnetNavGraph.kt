@@ -7,16 +7,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.simuel.onebitllm.ui.chatlist.ChatRoomListRoute
-import com.simuel.onebitllm.ui.chatlist.ChatRoomListScreen
 import com.simuel.onebitllm.ui.model.ChatRoomItemUiState
 import com.simuel.onebitllm.ui.splash.SplashRoute
 
 /**
- * App navigation graph. Starts at [Splash] and navigates to [ChatList].
+ * App navigation graph. Starts at [SPLASH] and navigates to [CHAT_LIST].
  */
 object BitnetDestination {
-    const val Splash = "splash"
-    const val ChatList = "chat_list"
+    const val SPLASH = "splash"
+    const val CHAT_LIST = "chat_list"
+    const val CHAT = "chat/{id}"
 }
 
 @Composable
@@ -25,31 +25,36 @@ fun BitnetNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = BitnetDestination.Splash
+        startDestination = BitnetDestination.SPLASH
     ) {
         addSplash(navController)
-        addChatList()
+        addChatList(navController)
+        addChat()
     }
 }
 
 private fun NavGraphBuilder.addSplash(navController: NavHostController) {
-    composable(BitnetDestination.Splash) {
+    composable(BitnetDestination.SPLASH) {
         SplashRoute(onNavigateToChatList = {
-            navController.navigate(BitnetDestination.ChatList) {
-                popUpTo(BitnetDestination.Splash) { inclusive = true }
+            navController.navigate(BitnetDestination.CHAT_LIST) {
+                popUpTo(BitnetDestination.SPLASH) { inclusive = true }
             }
         })
     }
 }
 
-private fun NavGraphBuilder.addChatList() {
-    composable(BitnetDestination.ChatList) {
+private fun NavGraphBuilder.addChatList(navController: NavHostController) {
+    composable(BitnetDestination.CHAT_LIST) {
         ChatRoomListRoute(
-            onNavigateChat = {/*TODO 채팅방 이동 구현*/}
+            onNavigateChat = { id ->
+                navController.navigate("chat/$id")
+            }
         )
     }
 }
-private val temporaryChats = listOf(
-    ChatRoomItemUiState(1, "Title 1", "Hey, how are you?"),
-    ChatRoomItemUiState(2, "Title 2", "I'm on my way"),
-)
+private fun NavGraphBuilder.addChat() {
+    composable(BitnetDestination.CHAT) { backStackEntry ->
+        val id = backStackEntry.arguments?.getString("id")?.toLong() ?: return@composable
+        com.simuel.onebitllm.ui.chat.ChatRoute(chatId = id)
+    }
+}
