@@ -66,18 +66,19 @@ class ChatRepositoryImpl @Inject constructor(
     }
 
     override suspend fun addUserMessage(chatId: Long, content: String): Long {
-        return chatDataSource.insertUserMessage(chatId, content)
+        val id = chatDataSource.insertUserMessage(chatId, content)
+        chatDataSource.updateChatUpdatedAt(chatId)
+        return id
     }
 
     override suspend fun addAssistantMessage(chatId: Long, initialContent: String): Long {
-        return chatDataSource.insertAssistantMessage(chatId, initialContent)
+        val id = chatDataSource.insertAssistantMessage(chatId, initialContent)
+        chatDataSource.updateChatUpdatedAt(chatId)
+        return id
     }
 
     override suspend fun updateMessageContent(messageId: Long, content: String) {
         chatDataSource.updateMessageContent(messageId, content)
     }
-
-//    override suspend fun getMessageById(messageId: Long): ChatMessage {
-//        TODO("Not yet implemented")
-//    }
+    
 } 

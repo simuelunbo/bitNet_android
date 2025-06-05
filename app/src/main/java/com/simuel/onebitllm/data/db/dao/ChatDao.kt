@@ -40,4 +40,7 @@ interface ChatDao {
         """
     )
     fun getChatsWithLastMessage(): Flow<List<ChatWithLastMessage>>
+
+    @Query("UPDATE chats SET updatedAt = :time WHERE id = :chatId")
+    suspend fun updateChatUpdatedAt(chatId: Long, time: Date = Date())
 }

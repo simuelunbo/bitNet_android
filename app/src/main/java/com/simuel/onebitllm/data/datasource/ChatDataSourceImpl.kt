@@ -74,4 +74,8 @@ class ChatDataSourceImpl @Inject constructor(
     override suspend fun updateMessageContent(messageId: Long, content: String) {
         messageDao.updateMessageContent(messageId, content)
     }
+
+    override suspend fun updateChatUpdatedAt(chatId: Long) {
+        chatDao.updateChatUpdatedAt(chatId)
+    }
 } 

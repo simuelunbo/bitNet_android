@@ -25,4 +25,6 @@ interface ChatDataSource {
     suspend fun insertAssistantMessage(chatId: Long, initialContent: String): Long
     
     suspend fun updateMessageContent(messageId: Long, content: String)
+
+    suspend fun updateChatUpdatedAt(chatId: Long)
 } 
