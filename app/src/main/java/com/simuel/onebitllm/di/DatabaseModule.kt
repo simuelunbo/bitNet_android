@@ -16,7 +16,7 @@ object DatabaseModule {
     @Singleton
     @Provides
     fun provideAppDatabase(@ApplicationContext context: Context) = databaseBuilder(
-        context, AppDatabase::class.java, "news_db"
+        context, AppDatabase::class.java, "bitnet_db"
     ).fallbackToDestructiveMigration(dropAllTables = false)
         .build()
 
