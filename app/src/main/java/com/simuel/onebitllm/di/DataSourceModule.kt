@@ -1,5 +1,7 @@
 package com.simuel.onebitllm.di
 
+import com.simuel.onebitllm.data.datasource.BitnetNativeDataSource
+import com.simuel.onebitllm.data.datasource.BitnetNativeDataSourceImpl
 import com.simuel.onebitllm.data.datasource.ChatDataSource
 import com.simuel.onebitllm.data.datasource.ChatDataSourceImpl
 import com.simuel.onebitllm.data.datasource.UserDataStoreDataSource
@@ -12,6 +14,8 @@ import dagger.hilt.components.SingletonComponent
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataSourceModule {
+    @Binds
+    abstract fun bindBitnetNativeDataSource(source: BitnetNativeDataSourceImpl): BitnetNativeDataSource
 
     @Binds
     abstract fun bindUserDataStoreDataSource(source: UserDataStoreDataSourceImpl): UserDataStoreDataSource
