@@ -3,6 +3,7 @@
 #include <cstring>
 #include <vector>
 #include "include/bitnet_android.h"
+#include <llama.h>
 
 // 로그 매크로 정의
 #include <android/log.h>
@@ -11,23 +12,7 @@
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 
-// 외부 llama.cpp API 인터페이스 선언
-struct llama_model;
-struct llama_context;
-
-// 실제 llama.cpp 함수를 약한 참조로 선언 - 런타임에 동적으로 해결됨
-extern "C" {
-    __attribute__((weak)) llama_model* llama_load_model_from_file(const char* path, int n_threads);
-    __attribute__((weak)) llama_context* llama_new_context_with_model(llama_model* model, int n_threads);
-    __attribute__((weak)) void llama_free(llama_context* ctx);
-    __attribute__((weak)) void llama_free_model(llama_model* model);
-    __attribute__((weak)) int llama_tokenize(llama_context* ctx, const char* text, int* tokens, int n_max_tokens);
-    __attribute__((weak)) float* llama_get_logits(llama_context* ctx);
-    __attribute__((weak)) int llama_token_to_str(llama_context* ctx, int token, char* str, int size);
-    __attribute__((weak)) int llama_eval(llama_context* ctx, const int* tokens, int n_tokens);
-    __attribute__((weak)) int llama_n_vocab(llama_context* ctx);
-    __attribute__((weak)) int llama_sample_top_p(llama_context* ctx, int* prev_tokens, int n_prev, float p);
-}
+// llama.cpp API 사용을 위해 헤더에서 정의된 타입을 그대로 사용한다
 
 /// 전역 컨텍스트 포인터 (실제 타입은 BitNet엔진 구조체)
 static bitnet_context* g_ctx = nullptr;
@@ -113,35 +98,29 @@ bitnet_context* bitnet_init_from_file(const char* modelPath, int n_threads) {
     s_tokens.reserve(MAX_TOKEN_LEN);
     
     try {
-        // llama.cpp API가 사용 가능한지 확인
-        if (llama_load_model_from_file && llama_new_context_with_model) {
-            LOGI("Loading model %s", modelPath);
-            
-            // 모델 로드
-            llama_model* model = llama_load_model_from_file(modelPath, n_threads);
-            if (!model) {
-                LOGE("Failed to load model");
-                return ctx;
-            }
-            
-            // 컨텍스트 생성
-            llama_context* lctx = llama_new_context_with_model(model, n_threads);
-            if (!lctx) {
-                LOGE("Failed to create context");
-                llama_free_model(model);
-                return ctx;
-            }
-            
-            // 컨텍스트 저장
-            ctx->llama_model = model;
-            ctx->llama_context = lctx;
-            ctx->is_initialized = true;
-            
-            LOGI("Model loaded successfully");
-        } else {
-            LOGW("llama.cpp API not available, running in demo mode");
-            ctx->is_initialized = true; // 데모 모드로 실행
+        LOGI("Loading model %s", modelPath);
+
+        // 모델 로드
+        llama_model* model = llama_load_model_from_file(modelPath, n_threads);
+        if (!model) {
+            LOGE("Failed to load model");
+            return ctx;
         }
+
+        // 컨텍스트 생성
+        llama_context* lctx = llama_new_context_with_model(model, n_threads);
+        if (!lctx) {
+            LOGE("Failed to create context");
+            llama_free_model(model);
+            return ctx;
+        }
+
+        // 컨텍스트 저장
+        ctx->llama_model = model;
+        ctx->llama_context = lctx;
+        ctx->is_initialized = true;
+
+        LOGI("Model loaded successfully");
     } catch (...) {
         LOGE("Exception during model initialization");
     }
@@ -175,11 +154,11 @@ void bitnet_free(bitnet_context* ctx) {
         
         try {
             // llama.cpp 리소스 해제
-            if (ctx->llama_context && llama_free) {
+            if (ctx->llama_context) {
                 llama_free((llama_context*)ctx->llama_context);
             }
-            
-            if (ctx->llama_model && llama_free_model) {
+
+            if (ctx->llama_model) {
                 llama_free_model((llama_model*)ctx->llama_model);
             }
         } catch (...) {
@@ -213,27 +192,21 @@ Java_com_simuel_onebitllm_BitnetNative_setInput(
         s_tokens.clear();
         
         // 실제 모델이 로드된 경우
-        if (g_ctx->llama_context && llama_tokenize) {
-            // 입력 텍스트 토큰화
-            s_tokens.resize(MAX_TOKEN_LEN);
-            int n_tokens = llama_tokenize((llama_context*)g_ctx->llama_context, 
-                                         inputText, 
-                                         s_tokens.data(), 
-                                         s_tokens.size());
-            
-            if (n_tokens < 0) {
+        if (g_ctx->llama_context) {
+            // 입력 텍스트 토큰화 (C++ API 사용)
+            std::vector<llama_token> tmp = llama_tokenize(g_model, inputText, true, true);
+            s_tokens.assign(tmp.begin(), tmp.end());
+
+            if (s_tokens.empty()) {
                 LOGE("Tokenization failed");
             } else {
-                s_tokens.resize(n_tokens);
-                LOGI("Input tokenized: %d tokens", n_tokens);
-                
+                LOGI("Input tokenized: %zu tokens", s_tokens.size());
+
                 // 토큰 평가 (모델 실행)
-                if (llama_eval) {
-                    int ret = llama_eval((llama_context*)g_ctx->llama_context, 
-                                        s_tokens.data(), 
-                                        s_tokens.size());
-                    success = (ret == 0);
-                }
+                int ret = llama_eval((llama_context*)g_ctx->llama_context,
+                                     s_tokens.data(),
+                                     s_tokens.size());
+                success = (ret == 0);
             }
         } else {
             // 데모 모드
