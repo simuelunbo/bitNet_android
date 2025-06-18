@@ -8,6 +8,10 @@ if(NOT LLAMA_PATH)
     message(FATAL_ERROR "LLAMA_PATH must be set to the llama.cpp source directory")
 endif()
 
+if(NOT EXISTS "${LLAMA_PATH}/llama.h")
+    message(FATAL_ERROR "LLAMA_PATH does not contain llama.cpp sources")
+endif()
+
 add_subdirectory(${LLAMA_PATH} external_llama)
 
 # BitNet JNI 구현

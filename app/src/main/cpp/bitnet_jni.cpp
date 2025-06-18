@@ -251,23 +251,19 @@ Java_com_simuel_onebitllm_BitnetNative_generateNextToken(
         return env->NewStringUTF("[not initialized]");
     }
 
-    // 다음 토큰 생성
-    llama_token new_token_id = llama_sampling_sample(g_ctx, nullptr, nullptr);
-    llama_sampling_accept(g_ctx, new_token_id, true);
+    // 내부 로직을 통해 토큰 생성
+    const char* token_str = bitnet_generate_next(g_ctx);
 
-    // 토큰을 문자열로 변환
-    const char *token_str = llama_token_to_piece(g_ctx, new_token_id).c_str();
-    if (!token_str) {
-        return nullptr;
+    if (g_ctx->llama_context && !s_tokens.empty()) {
+        // 방금 생성된 토큰을 컨텍스트에 반영
+        llama_token new_token_id = s_tokens.back();
+        llama_batch batch = llama_batch_init(1, 0, 1);
+        llama_batch_add(batch, new_token_id, g_n_past, { 0 }, false);
+        if (llama_decode(g_ctx, batch) == 0) {
+            g_n_past++;
+        }
+        llama_batch_free(batch);
     }
-
-    // 토큰 평가
-    llama_batch batch = llama_batch_init(1, 0, 1);
-    llama_batch_add(batch, new_token_id, g_n_past, { 0 }, false);
-    if (llama_decode(g_ctx, batch) != 0) {
-        return nullptr;
-    }
-    g_n_past++;
 
     return env->NewStringUTF(token_str);
 }
@@ -315,8 +311,10 @@ Java_com_simuel_onebitllm_BitnetNative_setSystemPrompt(JNIEnv *env, jobject thiz
         llama_batch batch = llama_batch_init(1, 0, 1);
         llama_batch_add(batch, g_system_tokens[i], i, { 0 }, false);
         if (llama_decode(g_ctx, batch) != 0) {
+            llama_batch_free(batch);
             return JNI_FALSE;
         }
+        llama_batch_free(batch);
         g_n_past++;
     }
 
@@ -348,8 +346,10 @@ Java_com_simuel_onebitllm_BitnetNative_setUserPrompt(JNIEnv *env, jobject thiz, 
         llama_batch batch = llama_batch_init(1, 0, 1);
         llama_batch_add(batch, g_user_tokens[i], g_n_past + i, { 0 }, false);
         if (llama_decode(g_ctx, batch) != 0) {
+            llama_batch_free(batch);
             return JNI_FALSE;
         }
+        llama_batch_free(batch);
     }
     g_n_past += g_user_tokens.size();
 
