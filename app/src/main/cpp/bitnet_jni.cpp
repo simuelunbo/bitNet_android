@@ -2,7 +2,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
-#include "bitnet/include/bitnet_android.h"
+#include "include/bitnet_android.h"
 
 // 로그 매크로 정의
 #include <android/log.h>
@@ -31,6 +31,8 @@ extern "C" {
 
 /// 전역 컨텍스트 포인터 (실제 타입은 BitNet엔진 구조체)
 static bitnet_context* g_ctx = nullptr;
+// 현재 로드된 llama.cpp 모델 포인터
+static llama_model* g_model = nullptr;
 
 // 텍스트 처리를 위한 토큰화 버퍼
 static std::vector<int> s_tokens;
@@ -257,6 +259,9 @@ Java_com_simuel_onebitllm_BitnetNative_initModel(
 
     // BitNet 엔진 호출
     g_ctx = bitnet_init_from_file(modelPath, static_cast<int>(nThreads));
+    if (g_ctx != nullptr) {
+        g_model = (llama_model*) g_ctx->llama_model;
+    }
 
     env->ReleaseStringUTFChars(modelPathJ, modelPath);
     return (g_ctx != nullptr && g_ctx->is_initialized) ? JNI_TRUE : JNI_FALSE;
@@ -303,10 +308,7 @@ Java_com_simuel_onebitllm_BitnetNative_freeModel(
     if (g_ctx != nullptr) {
         bitnet_free(g_ctx);
         g_ctx = nullptr;
-    }
-    if (g_model != nullptr) {
-        llama_free_model(g_model);
-        g_model = nullptr;
+        g_model = nullptr; // 모델 포인터도 초기화
     }
     // 프롬프트 토큰 초기화
     g_system_tokens.clear();
