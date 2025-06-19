@@ -26,25 +26,28 @@ import com.simuel.onebitllm.ui.theme.*
 @Composable
 fun ChatScreen(
     title: String,
+    onBackClick: () -> Unit,
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     ChatScreenContent(
         title = title,
         state = state,
+        onBackClick = onBackClick
     )
 }
 @Composable
 private fun ChatScreenContent(
     title: String,
     state: ChatState,
+    onBackClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundColor)
     ) {
-        ChatTopAppBar(title = title, onBackClick = {})
+        ChatTopAppBar(title = title, onBackClick = onBackClick)
 
         LazyColumn(
             modifier = Modifier.weight(1f)
@@ -207,7 +210,8 @@ private fun ChatScreenPreview() {
             title = "Chat Preview",
             state = ChatState(
                 messages = sampleMessages
-            )
+            ),
+            onBackClick = {}
         )
     }
 }

@@ -6,7 +6,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun ChatRoute(
     chatId: Long,
+    onBack: () -> Unit,
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
-    ChatScreen(title = "Chat $chatId", viewModel = viewModel)
+    ChatScreen(
+        title = "Chat $chatId",
+        onBackClick = onBack,
+        viewModel = viewModel
+    )
 }

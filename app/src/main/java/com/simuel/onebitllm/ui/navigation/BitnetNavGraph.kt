@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.simuel.onebitllm.ui.chat.ChatRoute
 import com.simuel.onebitllm.ui.chatlist.ChatRoomListRoute
 import com.simuel.onebitllm.ui.model.ChatRoomItemUiState
 import com.simuel.onebitllm.ui.splash.SplashRoute
@@ -29,7 +30,7 @@ fun BitnetNavGraph(
     ) {
         addSplash(navController)
         addChatList(navController)
-        addChat()
+        addChat(navController)
     }
 }
 
@@ -52,9 +53,12 @@ private fun NavGraphBuilder.addChatList(navController: NavHostController) {
         )
     }
 }
-private fun NavGraphBuilder.addChat() {
+private fun NavGraphBuilder.addChat(navController: NavHostController) {
     composable(BitnetDestination.CHAT) { backStackEntry ->
         val id = backStackEntry.arguments?.getString("id")?.toLong() ?: return@composable
-        com.simuel.onebitllm.ui.chat.ChatRoute(chatId = id)
+        ChatRoute(
+            chatId = id,
+            onBack = { navController.popBackStack() }
+        )
     }
 }
