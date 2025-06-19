@@ -33,15 +33,15 @@ fun ChatScreen(
     ChatScreenContent(
         title = title,
         state = state,
-        onBackClick = onBackClick
-    )
+        onBackClick = onBackClick,
+        onSendMessage = { viewModel.sendMessage(it) }    )
 }
 @Composable
 private fun ChatScreenContent(
     title: String,
     state: ChatState,
-    onBackClick: () -> Unit
-) {
+    onBackClick: () -> Unit,
+    onSendMessage: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -61,7 +61,10 @@ private fun ChatScreenContent(
         ChatInput(
             value = text,
             onValueChange = { text = it },
-            onSend = { }
+            onSend = {
+                onSendMessage(text)
+                text = ""
+            }
         )
     }
 }
@@ -211,7 +214,8 @@ private fun ChatScreenPreview() {
             state = ChatState(
                 messages = sampleMessages
             ),
-            onBackClick = {}
+            onBackClick = {},
+            onSendMessage = {}
         )
     }
 }
