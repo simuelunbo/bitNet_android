@@ -2,7 +2,6 @@ package com.simuel.onebitllm.ui.chatlist
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -40,5 +39,6 @@ fun ChatRoomListRoute(
         chats = state.items,
         onChatClick = { viewModel.onEvent(ChatRoomListEvent.SelectChat(it.id)) },
         onNewChat = { viewModel.onEvent(ChatRoomListEvent.NewChat) },
+        onChatDelete = { viewModel.onEvent(ChatRoomListEvent.RemoveChat(it.id)) }
     )
 }

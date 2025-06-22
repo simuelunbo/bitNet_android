@@ -2,6 +2,7 @@ package com.simuel.onebitllm.ui.chatlist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +25,7 @@ import com.simuel.onebitllm.ui.theme.TitleColor
 fun ChatListItem(
     chat: ChatRoomItemUiState,
     onItemClick: (ChatRoomItemUiState) -> Unit,
+    onItemLongClick: (ChatRoomItemUiState) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -32,7 +34,10 @@ fun ChatListItem(
             .background(BackgroundColor)
             .heightIn(min = 72.dp)
             .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable { onItemClick(chat) }
+            .combinedClickable(
+                onClick = { onItemClick(chat) },
+                onLongClick = { onItemLongClick(chat) }
+            )
         ,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -61,6 +66,7 @@ private fun ChatListItemPreview() {
             name = "Chat 1",
             lastMessage = "Last message"
         ),
-        onItemClick = {}
+        onItemClick = {},
+        onItemLongClick = {}
     )
 }

@@ -12,11 +12,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -32,8 +38,11 @@ fun ChatRoomListScreen(
     chats: List<ChatRoomItemUiState>,
     onNewChat: () -> Unit,
     onChatClick: (ChatRoomItemUiState) -> Unit,
+    onChatDelete: (ChatRoomItemUiState) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var selectedChat by remember { mutableStateOf<ChatRoomItemUiState?>(null) }
+    var showConfirm by remember { mutableStateOf(false) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -75,12 +84,41 @@ fun ChatRoomListScreen(
             ChatRoomListContent(
                 chats = chats,
                 onItemClick = onChatClick,
+                onItemLongClick = { selectedChat = it },
                 modifier = Modifier.weight(1f)
             )
         }
-
-
         Spacer(modifier = Modifier.height(20.dp))
+
+        if (selectedChat != null) {
+            AlertDialog(onDismissRequest = { selectedChat = null }, confirmButton = {
+                TextButton(onClick = { showConfirm = true }) {
+                    Text("삭제")
+                }
+            }, dismissButton = {
+                TextButton(onClick = { selectedChat = null }) {
+                    Text("취소")
+                }
+            }, title = { Text(selectedChat!!.name) })
+        }
+
+        if (showConfirm && selectedChat != null) {
+            AlertDialog(onDismissRequest = {
+                showConfirm = false
+                selectedChat = null
+            }, confirmButton = {
+                TextButton(onClick = {
+                    onChatDelete(selectedChat!!)
+                    showConfirm = false
+                    selectedChat = null
+                }) { Text("확인") }
+            }, dismissButton = {
+                TextButton(onClick = {
+                    showConfirm = false
+                    selectedChat = null
+                }) { Text("취소") }
+            }, text = { Text("삭제 하겠습니까?") })
+        }
     }
 }
 
@@ -88,7 +126,7 @@ fun ChatRoomListScreen(
 @Composable
 private fun ChatListScreenPreview() {
     OnebitLLMTheme {
-        ChatRoomListScreen(sampleChats(), onNewChat = {}, onChatClick = {})
+        ChatRoomListScreen(sampleChats(), onNewChat = {}, onChatClick = {}, onChatDelete = {})
     }
 }
 
@@ -96,7 +134,7 @@ private fun ChatListScreenPreview() {
 @Composable
 private fun EmptyChatListScreenPreview() {
     OnebitLLMTheme {
-        ChatRoomListScreen(emptyList(), onNewChat = {}, onChatClick = {})
+        ChatRoomListScreen(emptyList(), onNewChat = {}, onChatClick = {}, onChatDelete = {})
     }
 }
 
