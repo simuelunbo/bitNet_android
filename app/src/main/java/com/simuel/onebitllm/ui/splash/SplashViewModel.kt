@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.simuel.onebitllm.domain.model.ErrorCode
 import com.simuel.onebitllm.domain.model.OperationResult
 import com.simuel.onebitllm.domain.usecase.LoadModelUseCase
+import com.simuel.onebitllm.ui.model.ModelSyncState
 import com.simuel.onebitllm.ui.model.SplashEffect
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -26,7 +27,7 @@ class SplashViewModel @Inject constructor(
     private val _effect = Channel<SplashEffect>(Channel.BUFFERED)
     val effect: Flow<SplashEffect> = _effect.receiveAsFlow()
 
-    val progress: StateFlow<Float> = loadModelUseCase()
+    val state: StateFlow<ModelSyncState> = loadModelUseCase()
         .onEach { result ->
             when (result) {
                 is OperationResult.Success -> {
@@ -40,13 +41,16 @@ class SplashViewModel @Inject constructor(
         }
         .map { result ->
             when (result) {
-                is OperationResult.Success -> result.data * 100f
-                is OperationResult.Failure -> 0f
+                is OperationResult.Success -> {
+                    val percent = result.data * 100f
+                    if (percent >= 100f) ModelSyncState.Completed else ModelSyncState.InProgress(percent)
+                }
+                is OperationResult.Failure -> ModelSyncState.Failed(result.errorCode)
             }
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 0f
+            initialValue = ModelSyncState.Initial
         )
 }

@@ -21,7 +21,7 @@ fun SplashRoute(
     onNavigateToChatList: () -> Unit,
     viewModel: SplashViewModel = hiltViewModel()
 ) {
-    val progress by viewModel.progress.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -45,5 +45,5 @@ fun SplashRoute(
         }
         onDispose { job.cancel() }
     }
-    SplashScreen(progressPercent = progress)
+    SplashScreen(state = state)
 }

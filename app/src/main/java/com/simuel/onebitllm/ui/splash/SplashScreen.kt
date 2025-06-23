@@ -11,9 +11,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import com.simuel.onebitllm.ui.model.ModelSyncState
 
 @Composable
-fun SplashScreen(progressPercent: Float) {
+fun SplashScreen(state: ModelSyncState) {
+    val percent = when (state) {
+        is ModelSyncState.InProgress -> state.percentComplete
+        ModelSyncState.Completed -> 100f
+        else -> 0f
+    }
     Box(
         modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
     ) {
@@ -24,7 +30,7 @@ fun SplashScreen(progressPercent: Float) {
                 modifier = Modifier.wrapContentWidth()
             )
             Text(
-                text = "${progressPercent.toInt()}%",
+                text = "${percent.toInt()}%",
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center
             )
@@ -35,5 +41,5 @@ fun SplashScreen(progressPercent: Float) {
 @Preview(showBackground = true)
 @Composable
 private fun SplashScreenPreview() {
-    SplashScreen(progressPercent = 0.5f)
+    SplashScreen(state = ModelSyncState.InProgress(50f))
 }
