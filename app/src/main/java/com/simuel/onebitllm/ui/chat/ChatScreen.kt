@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simuel.onebitllm.domain.model.ChatMessage
+import com.simuel.onebitllm.ui.model.ChatResponseState
 import com.simuel.onebitllm.ui.model.ChatState
 import com.simuel.onebitllm.ui.theme.*
 
@@ -30,9 +31,11 @@ fun ChatScreen(
     viewModel: ChatViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val responseState by viewModel.responseState.collectAsStateWithLifecycle()
     ChatScreenContent(
         title = title,
         state = state,
+        responseState = responseState,
         onBackClick = onBackClick,
         onSendMessage = { viewModel.sendMessage(it) }    )
 }
@@ -40,6 +43,7 @@ fun ChatScreen(
 private fun ChatScreenContent(
     title: String,
     state: ChatState,
+    responseState: ChatResponseState,
     onBackClick: () -> Unit,
     onSendMessage: (String) -> Unit) {
     Column(
@@ -66,6 +70,12 @@ private fun ChatScreenContent(
                 text = ""
             }
         )
+
+        if (responseState is ChatResponseState.Started) {
+            CircularProgressIndicator(modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(8.dp))
+        }
     }
 }
 
@@ -214,6 +224,7 @@ private fun ChatScreenPreview() {
             state = ChatState(
                 messages = sampleMessages
             ),
+            responseState = ChatResponseState.Initial,
             onBackClick = {},
             onSendMessage = {}
         )
