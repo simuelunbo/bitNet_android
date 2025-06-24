@@ -55,12 +55,26 @@ class ChatRoomListViewModel @Inject constructor(
 
     private fun handleCreateChat() {
         viewModelScope.launch {
-            val id = useCases.createChat()
-            _effect.send(ChatRoomListEffect.NavigateToChat(id))
+            runCatching { useCases.createChat() }
+                .onSuccess { id ->
+                    _effect.send(ChatRoomListEffect.NavigateToChat(id))
+                }
+                .onFailure { e ->
+                    _effect.send(
+                        ChatRoomListEffect.ShowError(e.message ?: "알 수 없는 오류")
+                    )
+                }
         }
     }
 
     private fun handleDeleteChat(id: Long) {
-        viewModelScope.launch { useCases.deleteChat(id) }
+        viewModelScope.launch {
+            runCatching { useCases.deleteChat(id) }
+                .onFailure { e ->
+                    _effect.send(
+                        ChatRoomListEffect.ShowError(e.message ?: "알 수 없는 오류")
+                    )
+                }
+        }
     }
 }
