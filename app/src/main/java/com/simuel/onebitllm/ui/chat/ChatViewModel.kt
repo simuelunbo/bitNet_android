@@ -3,6 +3,8 @@ package com.simuel.onebitllm.ui.chat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.simuel.onebitllm.domain.model.ChatMessage
+import com.simuel.onebitllm.domain.model.OperationResult
 import com.simuel.onebitllm.domain.usecase.ChatUseCases
 import com.simuel.onebitllm.ui.model.ChatResponseState
 import com.simuel.onebitllm.ui.model.ChatState
@@ -39,29 +41,31 @@ class ChatViewModel @Inject constructor(
     fun sendMessage(content: String) {
         if (content.isBlank()) return
         viewModelScope.launch {
-            if (state.value.messages.isEmpty()) {
-                val title = generateTitleFromContent(content)
-                useCases.updateChatTitle(chatId, title)
-            }
+            updateChatTitleIfNeeded(content)
             useCases.generateResponse(chatId, content)
                 .onStart { _responseState.value = ChatResponseState.Started }
                 .catch { e -> _responseState.value = ChatResponseState.Failed(e) }
-                .collect { result ->
-                    when (result) {
-                        is com.simuel.onebitllm.domain.model.OperationResult.Success -> _responseState.value =
-                            ChatResponseState.Completed(result.data)
-
-                        is com.simuel.onebitllm.domain.model.OperationResult.Failure -> _responseState.value =
-                            ChatResponseState.Failed(
-                                result.exception ?: RuntimeException(result.message)
-                            )
-                    }
-                }
+                .collect(::handleResult)
         }
     }
 
-    private fun generateTitleFromContent(content: String): String {
+    private suspend fun updateChatTitleIfNeeded(content: String) {
+        if (state.value.messages.isNotEmpty()) return
+        val title = generateTitle(content)
+        useCases.updateChatTitle(chatId, title)
+    }
+
+    private fun handleResult(result: OperationResult<ChatMessage>) {
+        _responseState.value = when (result) {
+            is OperationResult.Success -> ChatResponseState.Completed(result.data)
+            is OperationResult.Failure -> ChatResponseState.Failed(
+                result.exception ?: RuntimeException(result.message)
+            )
+        }
+    }
+
+    private fun generateTitle(content: String): String {
         val firstLine = content.trim().lineSequence().firstOrNull().orEmpty()
-        return if (firstLine.length <= 20) firstLine else firstLine.substring(0, 20)
+        return firstLine.take(20)
     }
 }
