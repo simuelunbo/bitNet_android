@@ -48,6 +48,9 @@ fun ChatRoomListRoute(
         chats = state.items,
         onChatClick = { viewModel.onEvent(ChatRoomListEvent.SelectChat(it.id)) },
         onNewChat = { viewModel.onEvent(ChatRoomListEvent.NewChat) },
-        onChatDelete = { viewModel.onEvent(ChatRoomListEvent.RemoveChat(it.id)) }
+        onChatDelete = { viewModel.onEvent(ChatRoomListEvent.RemoveChat(it.id)) },
+        onChatRename = { chat, title ->
+            viewModel.onEvent(ChatRoomListEvent.UpdateTitle(chat.id, title))
+        }
     )
 }

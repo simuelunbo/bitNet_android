@@ -18,6 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +26,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.simuel.onebitllm.ui.model.ChatRoomItemUiState
@@ -39,10 +42,14 @@ fun ChatRoomListScreen(
     onNewChat: () -> Unit,
     onChatClick: (ChatRoomItemUiState) -> Unit,
     onChatDelete: (ChatRoomItemUiState) -> Unit,
+    onChatRename: (ChatRoomItemUiState, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedChat by remember { mutableStateOf<ChatRoomItemUiState?>(null) }
+    var showMenu by remember { mutableStateOf(false) }
     var showConfirm by remember { mutableStateOf(false) }
+    var showRename by remember { mutableStateOf(false) }
+    var renameText by remember { mutableStateOf(TextFieldValue()) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -84,22 +91,46 @@ fun ChatRoomListScreen(
             ChatRoomListContent(
                 chats = chats,
                 onItemClick = onChatClick,
-                onItemLongClick = { selectedChat = it },
+                onItemLongClick = {
+                    selectedChat = it
+                    renameText = TextFieldValue(
+                        it.name,
+                        selection = TextRange(0, it.name.length)
+                    )
+                    showMenu = true
+                },
                 modifier = Modifier.weight(1f)
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
 
-        if (selectedChat != null) {
-            AlertDialog(onDismissRequest = { selectedChat = null }, confirmButton = {
-                TextButton(onClick = { showConfirm = true }) {
-                    Text("삭제")
+        if (showMenu && selectedChat != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    showMenu = false
+                    selectedChat = null
+                },
+                confirmButton = {},
+                dismissButton = {
+                    TextButton(onClick = {
+                        showMenu = false
+                        selectedChat = null
+                    }) { Text("취소") }
+                },
+                title = { Text(selectedChat!!.name) },
+                text = {
+                    Column {
+                        TextButton(onClick = {
+                            showMenu = false
+                            showRename = true
+                        }) { Text("제목 수정") }
+                        TextButton(onClick = {
+                            showMenu = false
+                            showConfirm = true
+                        }) { Text("삭제") }
+                    }
                 }
-            }, dismissButton = {
-                TextButton(onClick = { selectedChat = null }) {
-                    Text("취소")
-                }
-            }, title = { Text(selectedChat!!.name) })
+            )
         }
 
         if (showConfirm && selectedChat != null) {
@@ -119,6 +150,35 @@ fun ChatRoomListScreen(
                 }) { Text("취소") }
             }, text = { Text("삭제 하겠습니까?") })
         }
+        if (showRename && selectedChat != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    showRename = false
+                    selectedChat = null
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        onChatRename(selectedChat!!, renameText.text)
+                        showRename = false
+                        selectedChat = null
+                    }) { Text("수정") }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showRename = false
+                        selectedChat = null
+                    }) { Text("취소") }
+                },
+                title = { Text("제목 수정") },
+                text = {
+                    TextField(
+                        value = renameText,
+                        onValueChange = { renameText = it },
+                        singleLine = true
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -126,16 +186,26 @@ fun ChatRoomListScreen(
 @Composable
 private fun ChatListScreenPreview() {
     OnebitLLMTheme {
-        ChatRoomListScreen(sampleChats(), onNewChat = {}, onChatClick = {}, onChatDelete = {})
+        ChatRoomListScreen(
+            sampleChats(),
+            onNewChat = {},
+            onChatClick = {},
+            onChatDelete = {},
+            onChatRename = { _, _ -> }
+        )
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun EmptyChatListScreenPreview() {
-    OnebitLLMTheme {
-        ChatRoomListScreen(emptyList(), onNewChat = {}, onChatClick = {}, onChatDelete = {})
-    }
+    ChatRoomListScreen(
+        emptyList(),
+        onNewChat = {},
+        onChatClick = {},
+        onChatDelete = {},
+        onChatRename = { _, _ -> }
+    )
 }
 
 private fun sampleChats(): List<ChatRoomItemUiState> = listOf(

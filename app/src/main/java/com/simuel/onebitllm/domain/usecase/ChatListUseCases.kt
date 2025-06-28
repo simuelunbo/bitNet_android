@@ -9,4 +9,5 @@ data class ChatListUseCases @Inject constructor(
     val getChatSummaries: GetChatSummariesUseCase,
     val createChat: CreateChatUseCase,
     val deleteChat: DeleteChatUseCase,
+    val updateChatTitle: UpdateChatTitleUseCase
 )

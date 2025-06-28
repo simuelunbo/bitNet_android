@@ -14,6 +14,7 @@ sealed interface ChatRoomListEvent {
     data object NewChat : ChatRoomListEvent
     data class SelectChat(val id: Long) : ChatRoomListEvent
     data class RemoveChat(val id: Long) : ChatRoomListEvent
+    data class UpdateTitle(val id: Long, val title: String) : ChatRoomListEvent
 }
 
 /** 단발성 사이드이펙트 */

@@ -50,6 +50,7 @@ class ChatRoomListViewModel @Inject constructor(
             )
 
             is ChatRoomListEvent.RemoveChat -> handleDeleteChat(event.id)
+            is ChatRoomListEvent.UpdateTitle -> handleUpdateTitle(event.id, event.title)
         }
     }
 
@@ -70,6 +71,17 @@ class ChatRoomListViewModel @Inject constructor(
     private fun handleDeleteChat(id: Long) {
         viewModelScope.launch {
             runCatching { useCases.deleteChat(id) }
+                .onFailure { e ->
+                    _effect.send(
+                        ChatRoomListEffect.ShowError(e.message ?: "알 수 없는 오류")
+                    )
+                }
+        }
+    }
+
+    private fun handleUpdateTitle(id: Long, title: String) {
+        viewModelScope.launch {
+            runCatching { useCases.updateChatTitle(id, title) }
                 .onFailure { e ->
                     _effect.send(
                         ChatRoomListEffect.ShowError(e.message ?: "알 수 없는 오류")
