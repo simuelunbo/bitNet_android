@@ -102,72 +102,41 @@ fun ChatRoomListScreen(
 
         when (val state = dialogState) {
             is DialogState.Options -> {
-                AlertDialog(
-                    onDismissRequest = { dialogState = DialogState.None },
-                    confirmButton = {},
-                    dismissButton = {
-                        TextButton(onClick = { dialogState = DialogState.None }) {
-                            Text("취소")
-                        }
+                ChatOptionsDialog(
+                    chat = state.chat,
+                    onRename = {
+                        dialogState = DialogState.Rename(
+                            state.chat,
+                            TextFieldValue(
+                                state.chat.name,
+                                selection = TextRange(0, state.chat.name.length)
+                            )
+                        )
                     },
-                    title = { Text(state.chat.name) },
-                    text = {
-                        Column {
-                            TextButton(onClick = {
-                                dialogState = DialogState.Rename(
-                                    state.chat, TextFieldValue(
-                                        state.chat.name,
-                                        selection = TextRange(0, state.chat.name.length)
-                                    )
-                                )
-                            }) { Text("제목 수정") }
-                            TextButton(onClick = {
-                                dialogState = DialogState.ConfirmDelete(state.chat)
-                            }) { Text("삭제") }
-                        }
-                    })
+                    onDelete = { dialogState = DialogState.ConfirmDelete(state.chat) },
+                    onDismiss = { dialogState = DialogState.None }
+                )
             }
 
             is DialogState.ConfirmDelete -> {
-                AlertDialog(
-                    onDismissRequest = { dialogState = DialogState.None },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            onChatDelete(state.chat)
-                            dialogState = DialogState.None
-                        }) { Text("확인") }
+                DeleteChatDialog(
+                    onConfirm = {
+                        onChatDelete(state.chat)
+                        dialogState = DialogState.None
                     },
-                    dismissButton = {
-                        TextButton(onClick = { dialogState = DialogState.None }) {
-                            Text("취소")
-                        }
-                    },
-                    text = { Text("삭제 하겠습니까?") }
+                    onDismiss = { dialogState = DialogState.None }
                 )
             }
 
             is DialogState.Rename -> {
-                AlertDialog(
-                    onDismissRequest = { dialogState = DialogState.None },
-                    confirmButton = {
-                        TextButton(onClick = {
-                            onChatRename(state.chat, state.text.text)
-                            dialogState = DialogState.None
-                        }) { Text("수정") }
+                RenameChatDialog(
+                    text = state.text,
+                    onTextChange = { dialogState = state.copy(text = it) },
+                    onConfirm = {
+                        onChatRename(state.chat, state.text.text)
+                        dialogState = DialogState.None
                     },
-                    dismissButton = {
-                        TextButton(onClick = { dialogState = DialogState.None }) {
-                            Text("취소")
-                        }
-                    },
-                    title = { Text("제목 수정") },
-                    text = {
-                        TextField(
-                            value = state.text,
-                            onValueChange = { dialogState = state.copy(text = it) },
-                            singleLine = true
-                        )
-                    }
+                    onDismiss = { dialogState = DialogState.None }
                 )
             }
 
