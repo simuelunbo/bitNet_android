@@ -36,6 +36,13 @@ import com.simuel.onebitllm.ui.theme.BackgroundColor
 import com.simuel.onebitllm.ui.theme.OnebitLLMTheme
 import com.simuel.onebitllm.ui.theme.TitleColor
 
+private sealed interface DialogState {
+    data object None : DialogState
+    data class Options(val chat: ChatRoomItemUiState) : DialogState
+    data class ConfirmDelete(val chat: ChatRoomItemUiState) : DialogState
+    data class Rename(val chat: ChatRoomItemUiState, val text: TextFieldValue) : DialogState
+}
+
 @Composable
 fun ChatRoomListScreen(
     chats: List<ChatRoomItemUiState>,
@@ -45,11 +52,8 @@ fun ChatRoomListScreen(
     onChatRename: (ChatRoomItemUiState, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedChat by remember { mutableStateOf<ChatRoomItemUiState?>(null) }
-    var showMenu by remember { mutableStateOf(false) }
-    var showConfirm by remember { mutableStateOf(false) }
-    var showRename by remember { mutableStateOf(false) }
-    var renameText by remember { mutableStateOf(TextFieldValue()) }
+    var dialogState by remember { mutableStateOf<DialogState>(DialogState.None) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -89,95 +93,86 @@ fun ChatRoomListScreen(
             )
         } else {
             ChatRoomListContent(
-                chats = chats,
-                onItemClick = onChatClick,
-                onItemLongClick = {
-                    selectedChat = it
-                    renameText = TextFieldValue(
-                        it.name,
-                        selection = TextRange(0, it.name.length)
-                    )
-                    showMenu = true
-                },
-                modifier = Modifier.weight(1f)
+                chats = chats, onItemClick = onChatClick, onItemLongClick = {
+                    dialogState = DialogState.Options(it)
+                }, modifier = Modifier.weight(1f)
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
 
-        if (showMenu && selectedChat != null) {
-            AlertDialog(
-                onDismissRequest = {
-                    showMenu = false
-                    selectedChat = null
-                },
-                confirmButton = {},
-                dismissButton = {
-                    TextButton(onClick = {
-                        showMenu = false
-                        selectedChat = null
-                    }) { Text("취소") }
-                },
-                title = { Text(selectedChat!!.name) },
-                text = {
-                    Column {
-                        TextButton(onClick = {
-                            showMenu = false
-                            showRename = true
-                        }) { Text("제목 수정") }
-                        TextButton(onClick = {
-                            showMenu = false
-                            showConfirm = true
-                        }) { Text("삭제") }
-                    }
-                }
-            )
-        }
+        when (val state = dialogState) {
+            is DialogState.Options -> {
+                AlertDialog(
+                    onDismissRequest = { dialogState = DialogState.None },
+                    confirmButton = {},
+                    dismissButton = {
+                        TextButton(onClick = { dialogState = DialogState.None }) {
+                            Text("취소")
+                        }
+                    },
+                    title = { Text(state.chat.name) },
+                    text = {
+                        Column {
+                            TextButton(onClick = {
+                                dialogState = DialogState.Rename(
+                                    state.chat, TextFieldValue(
+                                        state.chat.name,
+                                        selection = TextRange(0, state.chat.name.length)
+                                    )
+                                )
+                            }) { Text("제목 수정") }
+                            TextButton(onClick = {
+                                dialogState = DialogState.ConfirmDelete(state.chat)
+                            }) { Text("삭제") }
+                        }
+                    })
+            }
 
-        if (showConfirm && selectedChat != null) {
-            AlertDialog(onDismissRequest = {
-                showConfirm = false
-                selectedChat = null
-            }, confirmButton = {
-                TextButton(onClick = {
-                    onChatDelete(selectedChat!!)
-                    showConfirm = false
-                    selectedChat = null
-                }) { Text("확인") }
-            }, dismissButton = {
-                TextButton(onClick = {
-                    showConfirm = false
-                    selectedChat = null
-                }) { Text("취소") }
-            }, text = { Text("삭제 하겠습니까?") })
-        }
-        if (showRename && selectedChat != null) {
-            AlertDialog(
-                onDismissRequest = {
-                    showRename = false
-                    selectedChat = null
-                },
-                confirmButton = {
-                    TextButton(onClick = {
-                        onChatRename(selectedChat!!, renameText.text)
-                        showRename = false
-                        selectedChat = null
-                    }) { Text("수정") }
-                },
-                dismissButton = {
-                    TextButton(onClick = {
-                        showRename = false
-                        selectedChat = null
-                    }) { Text("취소") }
-                },
-                title = { Text("제목 수정") },
-                text = {
-                    TextField(
-                        value = renameText,
-                        onValueChange = { renameText = it },
-                        singleLine = true
-                    )
-                }
-            )
+            is DialogState.ConfirmDelete -> {
+                AlertDialog(
+                    onDismissRequest = { dialogState = DialogState.None },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            onChatDelete(state.chat)
+                            dialogState = DialogState.None
+                        }) { Text("확인") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { dialogState = DialogState.None }) {
+                            Text("취소")
+                        }
+                    },
+                    text = { Text("삭제 하겠습니까?") }
+                )
+            }
+
+            is DialogState.Rename -> {
+                AlertDialog(
+                    onDismissRequest = { dialogState = DialogState.None },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            onChatRename(state.chat, state.text.text)
+                            dialogState = DialogState.None
+                        }) { Text("수정") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { dialogState = DialogState.None }) {
+                            Text("취소")
+                        }
+                    },
+                    title = { Text("제목 수정") },
+                    text = {
+                        TextField(
+                            value = state.text,
+                            onValueChange = { dialogState = state.copy(text = it) },
+                            singleLine = true
+                        )
+                    }
+                )
+            }
+
+            DialogState.None -> {}
+
         }
     }
 }
@@ -191,8 +186,7 @@ private fun ChatListScreenPreview() {
             onNewChat = {},
             onChatClick = {},
             onChatDelete = {},
-            onChatRename = { _, _ -> }
-        )
+            onChatRename = { _, _ -> })
     }
 }
 
@@ -204,8 +198,7 @@ private fun EmptyChatListScreenPreview() {
         onNewChat = {},
         onChatClick = {},
         onChatDelete = {},
-        onChatRename = { _, _ -> }
-    )
+        onChatRename = { _, _ -> })
 }
 
 private fun sampleChats(): List<ChatRoomItemUiState> = listOf(

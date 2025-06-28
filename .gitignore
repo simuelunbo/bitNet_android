@@ -772,3 +772,4 @@ gradle-app.setting
 .idea/*
 
 # End of https://www.toptal.com/developers/gitignore/api/gradle
+app/src/main/assets/models/ggml-model-i2_s.gguf
