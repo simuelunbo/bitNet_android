@@ -32,16 +32,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.simuel.onebitllm.ui.model.ChatRoomItemUiState
+import com.simuel.onebitllm.ui.model.DialogState
 import com.simuel.onebitllm.ui.theme.BackgroundColor
 import com.simuel.onebitllm.ui.theme.OnebitLLMTheme
 import com.simuel.onebitllm.ui.theme.TitleColor
 
-private sealed interface DialogState {
-    data object None : DialogState
-    data class Options(val chat: ChatRoomItemUiState) : DialogState
-    data class ConfirmDelete(val chat: ChatRoomItemUiState) : DialogState
-    data class Rename(val chat: ChatRoomItemUiState, val text: TextFieldValue) : DialogState
-}
 
 @Composable
 fun ChatRoomListScreen(
@@ -59,33 +54,7 @@ fun ChatRoomListScreen(
             .fillMaxSize()
             .background(color = BackgroundColor)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(BackgroundColor)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Spacer(modifier = Modifier.size(48.dp))
-            Text(
-                text = "Chats",
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(start = 8.dp),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = TitleColor
-            )
-            IconButton(onClick = onNewChat) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "New Chat",
-                    tint = TitleColor
-                )
-            }
-        }
+        ChatRoomListTopBar(onNewChat = onNewChat)
 
         if (chats.isEmpty()) {
             ChatRoomListEmptyState(
@@ -99,50 +68,12 @@ fun ChatRoomListScreen(
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
-
-        when (val state = dialogState) {
-            is DialogState.Options -> {
-                ChatOptionsDialog(
-                    chat = state.chat,
-                    onRename = {
-                        dialogState = DialogState.Rename(
-                            state.chat,
-                            TextFieldValue(
-                                state.chat.name,
-                                selection = TextRange(0, state.chat.name.length)
-                            )
-                        )
-                    },
-                    onDelete = { dialogState = DialogState.ConfirmDelete(state.chat) },
-                    onDismiss = { dialogState = DialogState.None }
-                )
-            }
-
-            is DialogState.ConfirmDelete -> {
-                DeleteChatDialog(
-                    onConfirm = {
-                        onChatDelete(state.chat)
-                        dialogState = DialogState.None
-                    },
-                    onDismiss = { dialogState = DialogState.None }
-                )
-            }
-
-            is DialogState.Rename -> {
-                RenameChatDialog(
-                    text = state.text,
-                    onTextChange = { dialogState = state.copy(text = it) },
-                    onConfirm = {
-                        onChatRename(state.chat, state.text.text)
-                        dialogState = DialogState.None
-                    },
-                    onDismiss = { dialogState = DialogState.None }
-                )
-            }
-
-            DialogState.None -> {}
-
-        }
+        ChatRoomListDialogs(
+            state = dialogState,
+            onStateChange = { dialogState = it },
+            onChatDelete = onChatDelete,
+            onChatRename = onChatRename
+        )
     }
 }
 
