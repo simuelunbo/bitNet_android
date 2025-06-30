@@ -4,8 +4,9 @@ project(bitnet_android)
 # 사용자 환경에서 llama.cpp 경로 지정
 set(LLAMA_PATH "" CACHE PATH "Path to llama.cpp source")
 
+# 기본 경로를 BitNet 서브모듈 내 포함된 llama.cpp 위치로 설정한다
 if(NOT LLAMA_PATH)
-    message(FATAL_ERROR "LLAMA_PATH must be set to the llama.cpp source directory")
+    set(LLAMA_PATH "${CMAKE_CURRENT_SOURCE_DIR}/bitnet/3rdparty/llama.cpp" CACHE PATH "Path to llama.cpp source" FORCE)
 endif()
 
 if(NOT EXISTS "${LLAMA_PATH}/llama.h")

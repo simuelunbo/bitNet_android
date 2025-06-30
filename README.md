@@ -26,13 +26,9 @@ huggingface-cli download microsoft/BitNet-b1.58-2B-4T-gguf \
 다운로드한 폴더에서 `.gguf` 파일을 `app/src/main/assets/models/ggml-model-i2_s.gguf` 위치로 복사(또는 이름을 변경)합니다. 앱 실행 시 해당 자산을 내부 저장소로 복사하여 모델을 로드합니다.
 
 ### 3. llama.cpp 연동
-본 프로젝트는 이제 실제 llama.cpp 라이브러리와 연동하여 동작합니다. 빌드 시 `LLAMA_PATH` CMake 변수에 llama.cpp 소스 경로를 지정해야 합니다.
-
-```bash
+저장소에는 `app/src/main/cpp/bitnet/3rdparty/llama.cpp` 경로에 llama.cpp가 서브모듈로 포함되어 있습니다. `LLAMA_PATH` 변수를 따로 지정하지 않으면 이 기본 경로가 자동으로 사용됩니다. 다른 경로의 llama.cpp를 사용하고 싶다면 `LLAMA_PATH` 값을 지정하세요.```bash
 cmake -DLLAMA_PATH=/path/to/llama.cpp ...
 ```
-
-llama.cpp 소스가 없다면 빌드가 실패하므로 [llama.cpp](https://github.com/ggerganov/llama.cpp) 저장소를 내려받아 경로를 지정하세요.
 
 ### 4. 빌드 및 실행
 Android Studio에서 열어 실행하거나 아래 명령으로 빌드할 수 있습니다.
